@@ -7,20 +7,27 @@ GAME RULES:
 - The player can choose to 'Hold', which means that his ROUND score gets added to his GLBAL score. After that, it's the next player's turn
 - The first player to reach 100 points on GLOBAL score wins the game
 
-*/
-var scores, roundScore, activePlayer, dice, gamePlaying;
+//New rules
+- A player looses his entire (roundScore + globalScore) score if he rolls 2 sixes in a row. Next player starts after that
+- An input field exists where you can write the winning score
+- Add another dice to the game, so that there are two dices now. The player looses his current score when one of them is 1
 
-//dice=Math.floor(Math.random()*6)+1;
-console.log(dice);
+*/
+var scores, roundScore, activePlayer, gamePlaying, counter, inp, winningScore;
+
+
 init();
-document.querySelector('#current-'+activePlayer).textContent=dice;
-//document.querySelector('#current-'+activePlayer).innerHTML='<em>'+dice+'</em>'
+
+
 function init(){
     scores=[0,0];
     roundScore=0;
     activePlayer=0;
+    counter=0;
+    
     
     document.querySelector('.dice').style.display = 'none';
+    document.querySelector('.dice1').style.display = 'none';
     
     document.getElementById('score-0').textContent='0';
     document.getElementById('score-1').textContent='0';
@@ -46,23 +53,37 @@ document.querySelector('.btn-roll').addEventListener('click',function(){
         
     //first we need a randome number
     var dice=Math.floor(Math.random()*6)+1;
+    var dice1=Math.floor(Math.random()*6)+1;
+    
     
     //display the number
     var diceDOM=document.querySelector('.dice');
+    var diceDOM1=document.querySelector('.dice1');
     diceDOM.style.display='block';
+    diceDOM1.style.display='block';
     diceDOM.src='dice-'+dice+'.png';
-    
+    diceDOM1.src='dice-'+dice1+'.png';
     //Update the round score only if rolled number is not 1
-    if(dice!==1){
+    if(dice===6 && dice1 ===6){
+        roundScore=0;
+        scores[activePlayer]=0;
+        document.getElementById('current-' + activePlayer).textContent=0;
+        document.getElementById('score-' + activePlayer).textContent=0;
+        nextPlayer();
+        document.querySelector('.dice').style.display = 'none';
+        document.querySelector('.dice1').style.display = 'none';
+    }else if(dice!==1 && dice1!==1){
         //add score
-        roundScore+=dice;
+        roundScore+=dice+dice1;
         document.querySelector('#current-'+activePlayer).textContent=roundScore;
     }else{
         //next player
         
         nextPlayer();
         document.querySelector('.dice').style.display = 'none';
+        document.querySelector('.dice1').style.display = 'none';
     }
+    
 }
 });
 
@@ -79,6 +100,16 @@ document.querySelector('.btn-hold').addEventListener('click',function(){
     
     document.querySelector('#score-' + activePlayer).textContent=scores[activePlayer];
     //Check if the player won the game
+        
+    inp=document.querySelector('.final-score').value;
+    //"", undefined, 0 are COERCED to false everything else coerced to true
+    if(inp){
+        winningScore=inp;        
+    }else{
+        winningScore=10;
+    }
+        
+    console.log(inp)
     playerWins();    
 }
 
@@ -87,6 +118,7 @@ document.querySelector('.btn-hold').addEventListener('click',function(){
 function nextPlayer(){
     activePlayer === 0 ? activePlayer = 1 : activePlayer = 0;
     roundScore=0;
+    
     //set current score to 0 in user interface
     document.getElementById("current-0").textContent=0;
     document.getElementById("current-1").textContent=0;
@@ -95,7 +127,7 @@ function nextPlayer(){
 }
 
 function playerWins(){
-    if(scores[activePlayer]>=100){
+    if(scores[activePlayer]>=winningScore){
         document.querySelector('#name-' + activePlayer).textContent='WINNER!';
         document.querySelector('.player-' + activePlayer + '-panel').classList.add('winner');
         document.querySelector('.player-' + activePlayer + '-panel').classList.remove('active');
@@ -105,7 +137,9 @@ function playerWins(){
     }
 }
 
-document.querySelector('.btn-new').addEventListener('click',init);
+document.querySelector('.btn-new').addEventListener('click',function(){
+    init();
+});
 
 
 
